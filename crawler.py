@@ -4,7 +4,6 @@ import sys
 import json
 import time
 import requests
-import pandas as pd
 import pymysql.cursors
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -222,18 +221,21 @@ def parse(link, article_id, board, timeout=3):
 
 if __name__ == "__main__":
 	# Enter board name you want to crawler
-	board_input_Name = str(sys.argv[1])
-	start = get_latest_page(board_input_Name)
-	page = 1
+	try:
+		board_input_Name = str(sys.argv[1])
+		start = get_latest_page(board_input_Name)
+		page = 1
 
-	if(start is not "Null"):
-		print("Index numbers: ", int(start)-1)
-		data = parse_articles(int(start)-1, page, board_input_Name)
-	else:
-		data = {
-			"status": "error"
-		}
+		if(start is not "Null"):
+			print("Index numbers: ", int(start)-1)
+			data = parse_articles(int(start)-1, page, board_input_Name)
+		else:
+			data = {
+				"status": "error"
+			}
 
-	with open(str(int(start)-page) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
-		json.dump(data, outfile)
+		with open(str(int(start)-page) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
+			json.dump(data, outfile)
+	except IndexError:
+		print("Please check paramaters.")
 
