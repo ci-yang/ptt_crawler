@@ -109,6 +109,10 @@ def parse_articles(start, page, board, timeout=3):
 def parse(link, article_id, board, timeout=3):
 	# 爬取每篇文章的內容
 	
+	author = ''
+	title = ''
+	date = ''
+	
 	print('Processing article: ', article_id)
 
 	isTimeoutError = True			# handdle timeout exception
@@ -125,8 +129,11 @@ def parse(link, article_id, board, timeout=3):
 		print('invalid url:', resp.url)
 
 	soup = BeautifulSoup(resp.text, 'html.parser')
-	main_content = soup.find(id="main-content")
-	metas = main_content.select('div.article-metaline')
+	try:
+		main_content = soup.find(id="main-content")
+		metas = main_content.select('div.article-metaline')
+	except:
+		return
 	
 	isReference = 0
 	ref_author_name = ''
@@ -204,7 +211,7 @@ def parse(link, article_id, board, timeout=3):
 		"date": date,                           #時間
 		"ip": ip,                               #IP
 		"article_url": link,                    #文章地址
-		"content_html": str(content_html),           #原始內文html結構
+		"content_html": str(content_html),      #原始內文html結構
 		"isReference": isReference,             #使否引述文章
 		"ref_text": ref_text,                   #原始引述字串
 		"ref_author_ID": ref_author_ID,         #引述的作者ＩＤ
@@ -228,13 +235,13 @@ if __name__ == "__main__":
 
 		if(start is not "Null"):
 			print("Index numbers: ", int(start)-1)
-			data = parse_articles(int(start)-1, page, board_input_Name)
+			data = parse_articles(int(start)-1, start, board_input_Name)
 		else:
 			data = {
 				"status": "error"
 			}
 
-		with open(str(int(start)-page) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
+		with open(board_input_Name + '-' + str(int(start)-start) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
 			json.dump(data, outfile)
 	except IndexError:
 		print("Please check paramaters.")
