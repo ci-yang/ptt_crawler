@@ -97,7 +97,7 @@ def parse_articles(start, page, board, timeout=3):
 				print('article id: ', article_id)
 				#print(ptt_obj)
 				result.append(ptt_obj)
-			except TypeError:
+			except:
 				print("Article maybe deleted!!")
 
 		time.sleep(0.1)
