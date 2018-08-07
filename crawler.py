@@ -156,7 +156,10 @@ def parse(link, article_id, board, timeout=3):
 	content_html = main_content
 
 	# remove and keep push nodes
-	pushes = main_content.find_all('div', class_='push')
+	try:
+		pushes = main_content.find_all('div', class_='push')
+	except:
+		pushes = None
 
 	#IP
 	try:
@@ -184,25 +187,29 @@ def parse(link, article_id, board, timeout=3):
 		isReference = 0
 
 	# push messages
-	p, b, n = 0, 0, 0		# push tag, boo tag, arraw tag
 	messages = []
-	for push in pushes:
-		if not push.find('span', 'push-tag'):
-			continue
-		push_tag = push.find('span', 'push-tag').string.strip(' \t\n\r')
-		push_userid = push.find('span', 'push-userid').string.strip(' \t\n\r')
+	p, b, n = 0, 0, 0		# push tag, boo tag, arraw tag
+	if( pushes ):
+		for push in pushes:
+			if not push.find('span', 'push-tag'):
+				continue
+			try:
+				push_tag = push.find('span', 'push-tag').string.strip(' \t\n\r')
+				push_userid = push.find('span', 'push-userid').string.strip(' \t\n\r')
 
-		# if find is None: find().strings -> list -> ' '.join; else the current way
-		push_content = push.find('span', 'push-content').strings
-		push_content = ' '.join(push_content)[1:].strip(' \t\n\r')  # remove ':'
-		push_ipdatetime = push.find('span', 'push-ipdatetime').string.strip(' \t\n\r')
-		messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
-		if push_tag == u'推':
-			p += 1
-		elif push_tag == u'噓':
-			b += 1
-		else:
-			n += 1
+				# if find is None: find().strings -> list -> ' '.join; else the current way
+				push_content = push.find('span', 'push-content').strings
+				push_content = ' '.join(push_content)[1:].strip(' \t\n\r')  # remove ':'
+				push_ipdatetime = push.find('span', 'push-ipdatetime').string.strip(' \t\n\r')
+				messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
+			except:
+				pass
+			if push_tag == u'推':
+				p += 1
+			elif push_tag == u'噓':
+				b += 1
+			else:
+				n += 1
 
 	data = {
 		"author": author,                       #作者
@@ -232,16 +239,17 @@ if __name__ == "__main__":
 		board_input_Name = str(sys.argv[1])
 		start = get_latest_page(board_input_Name)
 		page = 1
+		# page = int(start) - 1			#if you want to crawler all articles of this board
 
 		if(start is not "Null"):
 			print("Index numbers: ", int(start)-1)
-			data = parse_articles(int(start)-1, start, board_input_Name)
+			data = parse_articles(int(start)-1, page, board_input_Name)
 		else:
 			data = {
 				"status": "error"
 			}
 
-		with open(board_input_Name + '-' + str(int(start)-start) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
+		with open(board_input_Name + '-' + str(int(start)-page) + '-' + str(int(start)-1) + '.json', 'w') as outfile:
 			json.dump(data, outfile)
 	except IndexError:
 		print("Please check paramaters.")
