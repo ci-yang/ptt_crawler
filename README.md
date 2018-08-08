@@ -10,7 +10,7 @@ PTT crawler with simple clean up.
 
 ### After generate the JSON file
 
-You can process the content of the articles using ==Build_Articles_Json.py== 
+You can process the content of the articles using *Build_Articles_Json.py*
 
 ```
 python Build_Articles_Json.py [JSON FILE NAME]
