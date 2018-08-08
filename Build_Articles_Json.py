@@ -140,9 +140,15 @@ if __name__ == "__main__":
 		for article in all_content_html:
 			content = get_content_and_pushes(article['content_html'])
 			creating_floors(content, article)
-		print(pushes_list)
+
+		# generate json obj including content and pushes obj
+		result = {
+			"content": content[0],
+			"pushes": pushes_list
+		}
+
+		with open( 'output.json', 'w') as outfile:
+			json.dump(result, outfile)
+		print("your JSON file has been generated")
 	except:
 		print("Error!!")
-	
-
-	#print(all_content_html)
