@@ -68,6 +68,59 @@ def get_content_and_pushes(content_html):
 
 	return content
 
+
+def creating_floors(message_list, article):
+    p, b, n = 0, 0, 0
+    floor = 0
+    messages = []
+    for push in message_list:
+        if( type(push) == bs4.element.Tag and push.find('span', 'push-tag') ):
+            push_tag = push.find('span', 'push-tag').string.strip(' \t\n\r')
+            push_userid = push.find('span', 'push-userid').string.strip(' \t\n\r')
+            push_content = push.find('span', 'push-content').strings
+            push_content = ' '.join(push_content)[1:].strip(' \t\n\r')  # remove ':'
+            push_ipdatetime = push.find('span', 'push-ipdatetime').string.strip(' \t\n\r')
+            response_tag = "使用者回文"
+            response_type = 1
+            #messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime, "回文類型": "使用者回文", "floor": floor} )
+            if push_tag == u'推':
+                push_type = 1
+                p += 1
+            elif push_tag == u'噓':
+                push_type = 0
+                b += 1
+            else:
+                push_type = 2
+                n += 1
+            
+        else:
+            #messages.append({'push_tag': "", 'push_userid': article["authorID"], 'push_content': push, 'push_ipdatetime': "", "回文類型": "作者回應", "floor": floor})
+            push_tag = ""
+            push_type = 3  #作者回文
+            push_userid = article["authorID"]
+            push_content = push
+            push_ipdatetime = ""
+            response_tag = "作者回應"
+            response_type = 0
+            
+        
+        data = {
+            "tag": push_tag,
+            "tag_type": push_type,
+            "uID": push_userid,
+            "content": push_content,
+            "date": push_ipdatetime,
+            "type_label": response_tag,
+            "type": response_type,
+            "floor": floor,
+        }
+        
+        #messages.append(data)
+        if( floor ):
+            pushes_list.append(data)
+        
+        floor+=1
+
 if __name__ == "__main__":
 	# 讀取 crawler.py 生出來的 JSON 做資料清理及建立文章資料表
 	# step1: load JSON
@@ -86,7 +139,8 @@ if __name__ == "__main__":
 	try:
 		for article in all_content_html:
 			content = get_content_and_pushes(article['content_html'])
-			print(content)
+			creating_floors(content, article)
+		print(pushes_list)
 	except:
 		print("Error!!")
 	
